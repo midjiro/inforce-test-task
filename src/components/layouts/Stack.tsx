@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
 interface StackProps {
@@ -9,10 +10,11 @@ export const Stack = (props: StackProps) => {
     const { children, maxHeight } = props;
 
     return (
-        <section
-            className={`flex flex-col gap-6 max-h-[${maxHeight}px] overflow-auto`}
+        <motion.section
+            className={`flex flex-col justify-start gap-6 max-h-[${maxHeight}px] overflow-auto`}
+            layout
         >
             {children}
-        </section>
+        </motion.section>
     );
 };

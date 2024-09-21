@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
 interface RowProps {
@@ -8,8 +9,8 @@ export const Row = (props: RowProps) => {
     const { children } = props;
 
     return (
-        <section className={`flex flex-wrap items-start gap-6 `}>
+        <motion.section className={`flex flex-wrap items-start gap-6 `} layout>
             {children}
-        </section>
+        </motion.section>
     );
 };

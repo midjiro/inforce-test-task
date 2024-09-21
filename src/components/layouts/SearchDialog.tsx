@@ -1,53 +1,106 @@
-import { forwardRef, Ref, useContext, useState } from 'react';
+import { ChangeEvent, forwardRef, Ref, useContext, useState } from 'react';
 import { Input } from '../ui/input';
-import { Loader2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { PostsContext, PostsState } from '@/App';
 import { SearchExcerpt } from '../common/SuggestionExcerpt';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Stack } from './Stack';
+import { FetchingErrorMessage } from '../common/Message';
+import { motion } from 'framer-motion';
 
-export const SearchDialog = forwardRef((_, ref: Ref<HTMLDialogElement>) => {
-    const ctx = useContext<PostsState>(PostsContext);
-    const closeDialog = (ref: any) => ref?.current.close();
+interface SearchDialogHeaderProps {
+    suggestions: string[];
+    query: string;
+    onQueryChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    onClose: () => void;
+}
 
-    const [query, setQuery] = useState('');
-    const debouncedQuery = useDebounce(query, 300);
-
-    const sortedPosts = ctx?.posts?.filter((post) =>
-        post.title.toLowerCase().includes(debouncedQuery.toLowerCase())
-    );
-
+const SearchDialogHeader = ({
+    suggestions,
+    query,
+    onQueryChange,
+    onClose,
+}: SearchDialogHeaderProps) => {
     return (
-        <dialog
-            className="min-w-[288px] max-h-[300px] w-[43.75%] p-4 md:p-6 rounded-lg"
-            ref={ref}
-        >
+        <>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-md md:text-lg font-bold">
                     Explore the Unknown
                 </h1>
-                <button onClick={closeDialog}>
+                <button onClick={onClose}>
                     <X className="w-6 h-6" />
                 </button>
             </div>
             <Input
+                list="suggestions"
                 type="text"
                 name="title"
                 className="rounded-full mb-6"
                 value={query}
-                onChange={({ target }) => setQuery(target.value)}
+                onChange={onQueryChange}
                 autoComplete="title"
             />
+            <datalist id="suggestions">
+                {suggestions?.map((suggestion: string) => (
+                    <option>{suggestion}</option>
+                ))}
+            </datalist>
+        </>
+    );
+};
 
-            {ctx?.loading ? (
-                <Loader2 className="mx-auto animate-spin" />
-            ) : (
-                <Stack maxHeight={300}>
-                    {sortedPosts?.map((post, index) => (
-                        <SearchExcerpt {...post} key={index} />
-                    ))}
-                </Stack>
-            )}
-        </dialog>
+export const SearchDialog = forwardRef((_, ref: Ref<HTMLDialogElement>) => {
+    const { posts } = useContext<PostsState>(PostsContext);
+
+    const [query, setQuery] = useState('');
+    const debouncedQuery = useDebounce(query, 300);
+
+    const sortedPosts = posts?.filter(({ title }) => {
+        const preparedTitle = title.toLowerCase();
+        const preparedQuery = debouncedQuery.toLowerCase();
+
+        return preparedTitle.includes(preparedQuery);
+    });
+    const suggestion = posts ? posts.map((post) => post.title) : [];
+    const closeDialog = () => ref?.current.close();
+    const handleChange = ({ target }: ChangeEvent<HTMLInputElement>) =>
+        setQuery(target.value);
+
+    if (posts?.length === 0)
+        return (
+            <motion.dialog
+                className="min-w-[288px] max-h-[300px] w-[43.75%] p-4 md:p-6 rounded-lg"
+                ref={ref}
+                layout
+            >
+                <SearchDialogHeader
+                    suggestions={suggestion}
+                    query={query}
+                    onClose={closeDialog}
+                    onQueryChange={({ target }) => setQuery(target.value)}
+                />
+                <FetchingErrorMessage />;
+            </motion.dialog>
+        );
+
+    return (
+        <motion.dialog
+            className="min-w-[288px] max-h-[300px] w-[43.75%] p-4 md:p-6 rounded-lg"
+            ref={ref}
+            layout
+        >
+            <SearchDialogHeader
+                suggestions={suggestion}
+                query={query}
+                onClose={closeDialog}
+                onQueryChange={handleChange}
+            />
+
+            <Stack maxHeight={300}>
+                {sortedPosts?.map((post, index) => (
+                    <SearchExcerpt {...post} key={index} />
+                ))}
+            </Stack>
+        </motion.dialog>
     );
 });
