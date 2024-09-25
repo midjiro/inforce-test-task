@@ -39,7 +39,7 @@ export const PostsContext = createContext<PostsState>({
 });
 
 function App() {
-    const { data, error, loading } = useFetch<PostsState>([
+    const { data, loading } = useFetch<PostsState>([
         'https://jsonplaceholder.typicode.com/posts',
         'https://jsonplaceholder.typicode.com/users',
     ]);
@@ -50,7 +50,6 @@ function App() {
                 {
                     posts: data ? data[0] : null,
                     users: data ? data[1] : null,
-                    error,
                     loading,
                 } as PostsState
             }
