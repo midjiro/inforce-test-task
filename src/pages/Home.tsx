@@ -46,6 +46,7 @@ export const Home = () => {
     return (
         <>
             <HeaderSection onClick={openDialog} />
+            <h1>Hello</h1>
             <Row>
                 {currentItems?.map((post: Post, index: number) => (
                     <PostExcerpt {...post} key={index} />
