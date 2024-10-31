@@ -1,4 +1,4 @@
-import { ChangeEvent, forwardRef, Ref, useContext, useState } from 'react';
+import { ChangeEvent, forwardRef, useContext, useState } from 'react';
 import { Input } from '../ui/input';
 import { X } from 'lucide-react';
 import { PostsContext, PostsState } from '@/App';
@@ -42,14 +42,14 @@ const SearchDialogHeader = ({
             />
             <datalist id="suggestions">
                 {suggestions?.map((suggestion: string) => (
-                    <option>{suggestion}</option>
+                    <option key={suggestion}>{suggestion}</option>
                 ))}
             </datalist>
         </>
     );
 };
 
-export const SearchDialog = forwardRef((_, ref: Ref<HTMLDialogElement>) => {
+export const SearchDialog = forwardRef<HTMLDialogElement>((_, ref) => {
     const { posts } = useContext<PostsState>(PostsContext);
 
     const [query, setQuery] = useState('');
@@ -58,11 +58,16 @@ export const SearchDialog = forwardRef((_, ref: Ref<HTMLDialogElement>) => {
     const sortedPosts = posts?.filter(({ title }) => {
         const preparedTitle = title.toLowerCase();
         const preparedQuery = debouncedQuery.toLowerCase();
-
         return preparedTitle.includes(preparedQuery);
     });
     const suggestion = posts ? posts.map((post) => post.title) : [];
-    const closeDialog = () => ref?.current.close();
+
+    const closeDialog = () => {
+        if (ref && 'current' in ref && ref.current) {
+            ref.current.close();
+        }
+    };
+
     const handleChange = ({ target }: ChangeEvent<HTMLInputElement>) =>
         setQuery(target.value);
 
@@ -77,9 +82,9 @@ export const SearchDialog = forwardRef((_, ref: Ref<HTMLDialogElement>) => {
                     suggestions={suggestion}
                     query={query}
                     onClose={closeDialog}
-                    onQueryChange={({ target }) => setQuery(target.value)}
+                    onQueryChange={handleChange}
                 />
-                <FetchingErrorMessage />;
+                <FetchingErrorMessage />
             </motion.dialog>
         );
 

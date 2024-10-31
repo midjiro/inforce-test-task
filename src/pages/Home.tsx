@@ -17,7 +17,7 @@ import { LoadingMessage, NoPostsMessage } from '@/components/common/Message';
 export const Home = () => {
     const itemsPerPage = 10;
     const { posts, loading } = useContext<PostsState>(PostsContext);
-    const dialogRef = useRef<HTMLDialogElement | null>(null);
+    const dialogRef = useRef<HTMLDialogElement>(null);
 
     const { currentPage, totalPages, goToNextPage, goToPreviousPage } =
         usePagination(itemsPerPage, posts?.length || 0);
